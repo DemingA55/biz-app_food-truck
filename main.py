@@ -13,6 +13,9 @@ git push
 
 """                        
 
+import csv
+
+
 
 # Displays the food truck's main menu
 def show_menu():
@@ -27,13 +30,42 @@ def show_menu():
     print("7. Save and Exit")
 
 
-inventory = {
-    "Taco": {"price": 3.50, "quantity": 30},
-    "Burrito": {"price": 8.00, "quantity": 20},
-    "Quesadilla": {"price": 6.50, "quantity": 25},
-    "Salad": {"price": 7.00, "quantity": 15},
-    "Cookie": {"price": 2.00, "quantity": 40}
-}
+inventory = {}
+
+
+
+# Loads food items from the inventory CSV file
+def load_inventory():
+    """Reads inventory.csv and loads the data into the inventory dictionary"""
+
+    with open("inventory.csv", "r") as file:
+        reader = csv.reader(file)
+        next(reader)
+
+        for row in reader:
+            if len(row) == 3:
+                item = row[0]
+                price = float(row[1])
+                quantity = int(row[2])
+
+                inventory[item] = {
+                    "price": price,
+                    "quantity": quantity
+                }
+
+
+# Saves the current inventory to the CSV file
+def save_inventory():
+    """Writes the inventory dictionary to inventory.csv"""
+
+    with open("inventory.csv", "w") as file:
+        writer = csv.writer(file)
+
+        writer.writerow(["item", "price", "quantity"])
+
+        for item, details in inventory.items():
+            writer.writerow([item, details["price"], details["quantity"]])
+
 
 
 # Displays all food items and their inventory details
@@ -170,12 +202,14 @@ def update_inventory():
                 print("Invalid option. Please enter Y or N.")
 
 
+load_inventory()
 while True:
     show_menu()
     print()
     user_input = input("Enter a number 1-7: ")
 
     if user_input == "7":
+        save_inventory()
         print("Exiting program...\n")
         break
 
@@ -192,4 +226,3 @@ while True:
         print("Invalid option. Please enter a number 1-7.\n")
 
 
-    
