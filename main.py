@@ -31,7 +31,7 @@ def show_menu():
 
 
 inventory = {}
-
+sales = []
 
 
 # Loads food items from the inventory CSV file
@@ -52,6 +52,123 @@ def load_inventory():
                     "price": price,
                     "quantity": quantity
                 }
+
+
+# Loads previous sales transactions from the CSV file
+def load_sales():
+    """Reads sales.csv and loads previous transactions into the sales list"""
+
+    with open("sales.csv", "r") as file:
+        reader = csv.reader(file)
+        next(reader)
+
+        for row in reader:
+            if len(row) == 4:
+                item = row[0]
+                quantity = int(row[1])
+                price = float(row[2])
+                total = float(row[3])
+
+                sale = {
+                    "item": item,
+                    "quantity": quantity,
+                    "price": price,
+                    "total": total
+                }
+
+                sales.append(sale)
+
+
+# Saves sales transactions to the CSV file
+def save_sales():
+    """Writes the sales list to sales.csv"""
+
+    with open("sales.csv", "w") as file:
+        writer = csv.writer(file)
+
+        writer.writerow(["item", "quantity", "price", "total"])
+
+        for sale in sales:
+            writer.writerow([
+                sale["item"],
+                sale["quantity"],
+                sale["price"],
+                sale["total"]
+            ])
+
+
+# Records a customer sale and updates inventory
+def record_sale():
+    """Records a sale and reduces the available inventory"""
+
+    # Ask which food item was sold
+    while True:
+        item = input("Enter food item name (or B to cancel): ").strip()
+
+        if item.lower() == "b":
+            print("Sale canceled.")
+            return
+
+        existing_item = ""
+
+        for name in inventory:
+            if name.lower() == item.lower():
+                existing_item = name
+                break
+
+        if existing_item != "":
+            break
+
+        else:
+            print("Item not found. Please try again.")
+
+    # Ask how many items were sold
+    while True:
+        quantity_input = input("Enter quantity sold (or B to cancel): ").strip()
+
+        if quantity_input.lower() == "b":
+            print("Sale canceled.")
+            return
+
+        elif quantity_input.isdigit():
+            quantity = int(quantity_input)
+
+            if quantity <= 0:
+                print("Quantity must be greater than zero.")
+
+            elif quantity > inventory[existing_item]["quantity"]:
+                print("Not enough inventory available. Please try again.")
+
+            else:
+                break
+
+        else:
+            print("Invalid quantity. Please try again.")
+
+    # Calculate the sale
+    price = inventory[existing_item]["price"]
+    total = price * quantity
+
+    # Create a transaction dictionary
+    sale = {
+        "item": existing_item,
+        "quantity": quantity,
+        "price": price,
+        "total": total
+    }
+
+    # Add the transaction to the sales list
+    sales.append(sale)
+
+    # Reduce the available inventory
+    inventory[existing_item]["quantity"] -= quantity
+
+    # Display the sale information
+    print("\n=== Sale Recorded ===")
+    print(f"Item: {existing_item}")
+    print(f"Quantity: {quantity}")
+    print(f"Total: ${total:.2f}")
+    print(f"Remaining inventory: {inventory[existing_item]['quantity']}\n")
 
 
 # Saves the current inventory to the CSV file
@@ -203,13 +320,16 @@ def update_inventory():
 
 
 load_inventory()
+load_sales()
 while True:
     show_menu()
     print()
     user_input = input("Enter a number 1-7: ")
-
+    
     if user_input == "7":
         save_inventory()
+        save_sales()
+        print("Inventory and sales saved successfully!")
         print("Exiting program...\n")
         break
 
@@ -218,11 +338,13 @@ while True:
     
     elif user_input == "2":
         update_inventory()
+
+    elif user_input == "3":
+        record_sale()
     
-    elif user_input in ["3", "4", "5", "6"]:
+    elif user_input in ["4", "5", "6"]:
         print("Coming soon!\n")
         
     else:
         print("Invalid option. Please enter a number 1-7.\n")
-
 
