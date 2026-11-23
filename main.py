@@ -13,8 +13,8 @@ git push
 
 """                        
 
-import csv
-import matplotlib.pyplot as plt
+import reports
+import big_sky_bites
 
 
 # Displays the food truck's main menu
@@ -30,456 +30,38 @@ def show_menu():
     print("7. Save and Exit")
 
 
-inventory = {}
-sales = []
-
-
-# Loads food items from the inventory CSV file
-def load_inventory():
-    """Reads inventory.csv and loads the data into the inventory dictionary"""
-
-    with open("inventory.csv", "r") as file:
-        reader = csv.reader(file)
-        next(reader)
-
-        for row in reader:
-            if len(row) == 3:
-                item = row[0]
-                price = float(row[1])
-                quantity = int(row[2])
-
-                inventory[item] = {
-                    "price": price,
-                    "quantity": quantity
-                }
-
-
-# Loads previous sales transactions from the CSV file
-def load_sales():
-    """Reads sales.csv and loads previous transactions into the sales list"""
-
-    with open("sales.csv", "r") as file:
-        reader = csv.reader(file)
-        next(reader)
-
-        for row in reader:
-            if len(row) == 4:
-                item = row[0]
-                quantity = int(row[1])
-                price = float(row[2])
-                total = float(row[3])
-
-                sale = {
-                    "item": item,
-                    "quantity": quantity,
-                    "price": price,
-                    "total": total
-                }
-
-                sales.append(sale)
-
-
-# Saves sales transactions to the CSV file
-def save_sales():
-    """Writes the sales list to sales.csv"""
-
-    with open("sales.csv", "w") as file:
-        writer = csv.writer(file)
-
-        writer.writerow(["item", "quantity", "price", "total"])
-
-        for sale in sales:
-            writer.writerow([
-                sale["item"],
-                sale["quantity"],
-                sale["price"],
-                sale["total"]
-            ])
-
-
-# Records a customer sale and updates inventory
-def record_sale():
-    """Records a sale and reduces the available inventory"""
-
-    # Ask which food item was sold
-    while True:
-        item = input("Enter food item name (or B to cancel): ").strip()
-
-        if item.lower() == "b":
-            print("Sale canceled.")
-            return
-
-        existing_item = ""
-
-        for name in inventory:
-            if name.lower() == item.lower():
-                existing_item = name
-                break
-
-        if existing_item != "":
-            break
-
-        else:
-            print("Item not found. Please try again.")
-
-    # Ask how many items were sold
-    while True:
-        quantity_input = input("Enter quantity sold (or B to cancel): ").strip()
-
-        if quantity_input.lower() == "b":
-            print("Sale canceled.")
-            return
-
-        elif quantity_input.isdigit():
-            quantity = int(quantity_input)
-
-            if quantity <= 0:
-                print("Quantity must be greater than zero.")
-
-            elif quantity > inventory[existing_item]["quantity"]:
-                print("Not enough inventory available. Please try again.")
-
-            else:
-                break
-
-        else:
-            print("Invalid quantity. Please try again.")
-
-    # Calculate the sale
-    price = inventory[existing_item]["price"]
-    total = price * quantity
-
-    # Create a transaction dictionary
-    sale = {
-        "item": existing_item,
-        "quantity": quantity,
-        "price": price,
-        "total": total
-    }
-
-    # Add the transaction to the sales list
-    sales.append(sale)
-
-    # Reduce the available inventory
-    inventory[existing_item]["quantity"] -= quantity
-
-    # Display the sale information
-    print("\n=== Sale Recorded ===")
-    print(f"Item: {existing_item}")
-    print(f"Quantity: {quantity}")
-    print(f"Total: ${total:.2f}")
-    print(f"Remaining inventory: {inventory[existing_item]['quantity']}\n")
-
-
-# Saves the current inventory to the CSV file
-def save_inventory():
-    """Writes the inventory dictionary to inventory.csv"""
-
-    with open("inventory.csv", "w") as file:
-        writer = csv.writer(file)
-
-        writer.writerow(["item", "price", "quantity"])
-
-        for item, details in inventory.items():
-            writer.writerow([item, details["price"], details["quantity"]])
-
-
-
-# Displays all food items and their inventory details
-def view_inventory():
-    """Displays all food items and their inventory details"""
-
-    print("\n=== Big Sky Bites Inventory ===\n")
-
-    for item, details in inventory.items():
-        print(f"{item}: ${details['price']:.2f}, Quantity: {details['quantity']}")
-
-    input("\nPress 'Enter' to return to the main menu...")
-
-
-# Allows the user to add or update food items
-def update_inventory():
-    """Allows the user to add or update food items"""
-
-    item = input("Enter food item name (or B to go back): ").strip()
-
-    if item.lower() == "b":
-        return
-
-    if item == "":
-        print("Please enter a food item name.")
-        return
-
-    existing_item = ""
-
-    for name in inventory:
-        if name.lower() == item.lower():
-            existing_item = name
-            break
-
-    if existing_item != "":
-        print(f"{existing_item} already exists in inventory.")
-
-        print("1. Change Price")
-        print("2. Change Quantity")
-
-        choice = input("Enter 1 or 2: ")
-
-        while choice != "1" and choice != "2":
-            print("Invalid option. Please try again.")
-            choice = input("Enter 1 or 2: ")
-
-        if choice == "1":
-
-            while True:
-                new_price = input("Enter new price (or B to cancel): ").strip()
-
-                if new_price.lower() == "b":
-                    print("Update canceled.")
-                    return
-
-                elif new_price.replace(".", "", 1).isdigit():
-                    inventory[existing_item]["price"] = float(new_price)
-                    print("Price updated successfully!")
-                    break
-
-                else:
-                    print("Invalid price. Please try again.")
-
-        elif choice == "2":
-
-            while True:
-                new_quantity = input("Enter new quantity (or B to cancel): ").strip()
-
-                if new_quantity.lower() == "b":
-                    print("Update canceled.")
-                    return
-
-                elif new_quantity.isdigit():
-                    inventory[existing_item]["quantity"] = int(new_quantity)
-                    print("Quantity updated successfully!")
-                    break
-
-                else:
-                    print("Invalid quantity. Please try again.")
-
-    else:
-        print(f"{item} is not currently in inventory.")
-
-        # Get the price
-        while True:
-            new_price = input("Enter price (or B to cancel): ").strip()
-
-            if new_price.lower() == "b":
-                print("Item addition canceled.")
-                return
-
-            elif new_price.replace(".", "", 1).isdigit():
-                break
-
-            else:
-                print("Invalid price. Please try again.")
-
-        # Get the quantity
-        while True:
-            new_quantity = input("Enter quantity (or B to cancel): ").strip()
-
-            if new_quantity.lower() == "b":
-                print("Item addition canceled.")
-                return
-
-            elif new_quantity.isdigit():
-                break
-
-            else:
-                print("Invalid quantity. Please try again.")
-
-        # Confirm the new item
-        print(f"\nItem: {item}")
-        print(f"Price: ${float(new_price):.2f}")
-        print(f"Quantity: {new_quantity}")
-
-        while True:
-            confirm = input("Add this item? (Y/N): ").lower().strip()
-
-            if confirm == "y":
-                inventory[item] = {
-                    "price": float(new_price),
-                    "quantity": int(new_quantity)
-                }
-
-                print(f"{item} added successfully!")
-                break
-
-            elif confirm == "n" or confirm == "b":
-                print("Item addition canceled.")
-                break
-
-            else:
-                print("Invalid option. Please enter Y or N.")
-
-
-# Groups sales transactions by food item
-def group_sales_by_item(sales):
-    """Calculates total quantities and revenue for each food item"""
-
-    item_totals = {}
-
-    for sale in sales:
-        item = sale["item"]
-
-        if item in item_totals:
-            item_totals[item]["quantity"] += sale["quantity"]
-            item_totals[item]["revenue"] += sale["total"]
-
-        else:
-            item_totals[item] = {
-                "quantity": sale["quantity"],
-                "revenue": sale["total"]
-            }
-
-    return item_totals
-
-
-
-# Displays a summary of Big Sky Bites sales
-def view_sales_report(sales):
-    """Displays sales statistics and totals for each food item"""
-
-    if len(sales) == 0:
-        print("No sales transactions have been recorded yet.")
-        return
-
-    item_totals = group_sales_by_item(sales)
-
-    total_revenue = 0
-    total_items_sold = 0
-
-    for sale in sales:
-        total_revenue += sale["total"]
-        total_items_sold += sale["quantity"]
-
-    total_transactions = len(sales)
-    average_sale = total_revenue / total_transactions
-
-    # Find the best-selling item
-    top_item = ""
-    top_quantity = 0
-
-    for item in item_totals:
-        if item_totals[item]["quantity"] > top_quantity:
-            top_item = item
-            top_quantity = item_totals[item]["quantity"]
-
-    # Display sales statistics
-    print("\n=== Big Sky Bites Sales Report ===\n")
-
-    print(f"Total transactions: {total_transactions}")
-    print(f"Total items sold: {total_items_sold}")
-    print(f"Total revenue: ${total_revenue:.2f}")
-    print(f"Average sale: ${average_sale:.2f}")
-    print(f"Best-selling item: {top_item} ({top_quantity} sold)")
-
-    # Display totals for individual food items
-    print("\nSales by Item:")
-
-    for item in item_totals:
-        print(f"{item}: {item_totals[item]['quantity']} sold, "
-              f"${item_totals[item]['revenue']:.2f} revenue")
-
-
-
-# Generates charts from sales transactions
-def generate_charts(sales):
-    """Creates charts showing Big Sky Bites sales information"""
-
-    if len(sales) == 0:
-        print("No sales available. Record a sale first.")
-        return
-
-    # Group sales by food item
-    item_totals = group_sales_by_item(sales)
-
-    items = []
-    quantities = []
-
-    for item in item_totals:
-        items.append(item)
-        quantities.append(item_totals[item]["quantity"])
-
-    # Create the bar chart
-    plt.figure()
-    plt.bar(items, quantities)
-
-    plt.title("Units Sold by Menu Item")
-    plt.xlabel("Menu Item")
-    plt.ylabel("Units Sold")
-
-    plt.savefig("units_sold_by_item.png")
-    plt.show()
-
-
-    # Prepare data for the line chart
-    transaction_numbers = []
-    sale_totals = []
-
-    transaction_number = 1
-
-    for sale in sales:
-        transaction_numbers.append(transaction_number)
-        sale_totals.append(sale["total"])
-
-        transaction_number += 1
-
-    # Create the line chart
-    plt.figure()
-    plt.plot(transaction_numbers, sale_totals, marker="o")
-
-    plt.title("Revenue by Transaction")
-    plt.xlabel("Transaction Number")
-    plt.ylabel("Revenue ($)")
-
-    plt.savefig("revenue_by_transaction.png")
-    plt.show()
-
-
-    print("Charts saved successfully!")
-
-
-
-
-load_inventory()
-load_sales()
+big_sky_bites.load_inventory()
+big_sky_bites.load_sales()
 while True:
     show_menu()
     print()
     user_input = input("Enter a number 1-7: ")
     
     if user_input == "7":
-        save_inventory()
-        save_sales()
+        big_sky_bites.save_inventory()
+        big_sky_bites.save_sales()
         print("Inventory and sales saved successfully!")
         print("Exiting program...\n")
         break
 
     elif user_input == "1":
-        view_inventory()
+        big_sky_bites.view_inventory()
     
     elif user_input == "2":
-        update_inventory()
+        big_sky_bites.update_inventory()
 
     elif user_input == "3":
-        record_sale()
+        big_sky_bites.record_sale()
     
     elif user_input == "4":
-        view_sales_report(sales)
+        reports.view_sales_report(big_sky_bites.sales)
         input("\nPress Enter to return to the main menu...")
 
     elif user_input == "5":
         print("Coming soon!\n")
 
     elif user_input == "6":
-        generate_charts(sales)
+        reports.generate_charts(big_sky_bites.sales)
         
     else:
         print("Invalid option. Please enter a number 1-7.\n")
