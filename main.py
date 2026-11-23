@@ -15,7 +15,7 @@ git push
 
 import reports
 import big_sky_bites
-
+import simulation
 
 # Displays the food truck's main menu
 def show_menu():
@@ -58,7 +58,8 @@ while True:
         input("\nPress Enter to return to the main menu...")
 
     elif user_input == "5":
-        print("Coming soon!\n")
+        simulation.run_simulation()
+        input("\nPress Enter to return to the main menu...")
 
     elif user_input == "6":
         reports.generate_charts(big_sky_bites.sales)
