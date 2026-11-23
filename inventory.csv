@@ -1,6 +1,7 @@
 item,price,quantity
-Taco,4.5,16
-Burrito,8.0,15
+Taco,4.5,12
+Burrito,8.0,11
 Quesadilla,6.5,25
 Salad,7.0,100
 Cookie,2.0,40
+Beans,7.85,20

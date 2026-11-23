@@ -319,6 +319,129 @@ def update_inventory():
                 print("Invalid option. Please enter Y or N.")
 
 
+# Groups sales transactions by food item
+def group_sales_by_item(sales):
+    """Calculates total quantities and revenue for each food item"""
+
+    item_totals = {}
+
+    for sale in sales:
+        item = sale["item"]
+
+        if item in item_totals:
+            item_totals[item]["quantity"] += sale["quantity"]
+            item_totals[item]["revenue"] += sale["total"]
+
+        else:
+            item_totals[item] = {
+                "quantity": sale["quantity"],
+                "revenue": sale["total"]
+            }
+
+    return item_totals
+
+
+
+# Displays a summary of Big Sky Bites sales
+def view_sales_report(sales):
+    """Displays sales statistics and totals for each food item"""
+
+    if len(sales) == 0:
+        print("No sales transactions have been recorded yet.")
+        return
+
+    item_totals = group_sales_by_item(sales)
+
+    total_revenue = 0
+    total_items_sold = 0
+
+    for sale in sales:
+        total_revenue += sale["total"]
+        total_items_sold += sale["quantity"]
+
+    total_transactions = len(sales)
+    average_sale = total_revenue / total_transactions
+
+    # Find the best-selling item
+    top_item = ""
+    top_quantity = 0
+
+    for item in item_totals:
+        if item_totals[item]["quantity"] > top_quantity:
+            top_item = item
+            top_quantity = item_totals[item]["quantity"]
+
+    # Display sales statistics
+    print("\n=== Big Sky Bites Sales Report ===\n")
+
+    print(f"Total transactions: {total_transactions}")
+    print(f"Total items sold: {total_items_sold}")
+    print(f"Total revenue: ${total_revenue:.2f}")
+    print(f"Average sale: ${average_sale:.2f}")
+    print(f"Best-selling item: {top_item} ({top_quantity} sold)")
+
+    # Display totals for individual food items
+    print("\nSales by Item:")
+
+    for item in item_totals:
+        print(f"{item}: {item_totals[item]['quantity']} sold, "
+              f"${item_totals[item]['revenue']:.2f} revenue")
+
+
+
+# Displays a summary of Big Sky Bites sales
+def view_sales_report(sales):
+    """Displays important sales statistics and group totals"""
+
+    # Check whether any transactions exist
+    if len(sales) == 0:
+        print("No sales transactions have been recorded yet.")
+        return
+
+    # Group transactions by food item
+    item_totals = group_sales_by_item(sales)
+
+    # Calculate total revenue and items sold
+    total_revenue = 0
+    total_items_sold = 0
+
+    for sale in sales:
+        total_revenue += sale["total"]
+        total_items_sold += sale["quantity"]
+
+    # Calculate transaction statistics
+    total_transactions = len(sales)
+    average_sale = total_revenue / total_transactions
+
+    # Find the best-selling food item
+    top_item = ""
+    top_quantity = 0
+
+    for item in item_totals:
+        if item_totals[item]["quantity"] > top_quantity:
+            top_item = item
+            top_quantity = item_totals[item]["quantity"]
+
+    # Display the report
+    print("\n=== Big Sky Bites Sales Report ===\n")
+
+    print(f"Total transactions: {total_transactions}")
+    print(f"Total items sold: {total_items_sold}")
+    print(f"Total revenue: ${total_revenue:.2f}")
+    print(f"Average sale: ${average_sale:.2f}")
+    print(f"Best-selling item: {top_item} ({top_quantity} sold)")
+
+    # Display totals for each food item
+    print("\nSales by Item:")
+
+    for item in item_totals:
+        print(
+            f"{item}: {item_totals[item]['quantity']} sold, "
+            f"${item_totals[item]['revenue']:.2f} revenue"
+        )
+
+
+
 load_inventory()
 load_sales()
 while True:
@@ -342,7 +465,11 @@ while True:
     elif user_input == "3":
         record_sale()
     
-    elif user_input in ["4", "5", "6"]:
+    elif user_input == "4":
+        view_sales_report(sales)
+        input("\nPress Enter to return to the main menu...")
+
+    elif user_input in ["5", "6"]:
         print("Coming soon!\n")
         
     else:
