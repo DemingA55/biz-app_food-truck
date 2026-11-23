@@ -14,7 +14,7 @@ git push
 """                        
 
 import csv
-
+import matplotlib.pyplot as plt
 
 
 # Displays the food truck's main menu
@@ -389,56 +389,62 @@ def view_sales_report(sales):
 
 
 
-# Displays a summary of Big Sky Bites sales
-def view_sales_report(sales):
-    """Displays important sales statistics and group totals"""
+# Generates charts from sales transactions
+def generate_charts(sales):
+    """Creates charts showing Big Sky Bites sales information"""
 
-    # Check whether any transactions exist
     if len(sales) == 0:
-        print("No sales transactions have been recorded yet.")
+        print("No sales available. Record a sale first.")
         return
 
-    # Group transactions by food item
+    # Group sales by food item
     item_totals = group_sales_by_item(sales)
 
-    # Calculate total revenue and items sold
-    total_revenue = 0
-    total_items_sold = 0
+    items = []
+    quantities = []
+
+    for item in item_totals:
+        items.append(item)
+        quantities.append(item_totals[item]["quantity"])
+
+    # Create the bar chart
+    plt.figure()
+    plt.bar(items, quantities)
+
+    plt.title("Units Sold by Menu Item")
+    plt.xlabel("Menu Item")
+    plt.ylabel("Units Sold")
+
+    plt.savefig("units_sold_by_item.png")
+    plt.show()
+
+
+    # Prepare data for the line chart
+    transaction_numbers = []
+    sale_totals = []
+
+    transaction_number = 1
 
     for sale in sales:
-        total_revenue += sale["total"]
-        total_items_sold += sale["quantity"]
+        transaction_numbers.append(transaction_number)
+        sale_totals.append(sale["total"])
 
-    # Calculate transaction statistics
-    total_transactions = len(sales)
-    average_sale = total_revenue / total_transactions
+        transaction_number += 1
 
-    # Find the best-selling food item
-    top_item = ""
-    top_quantity = 0
+    # Create the line chart
+    plt.figure()
+    plt.plot(transaction_numbers, sale_totals, marker="o")
 
-    for item in item_totals:
-        if item_totals[item]["quantity"] > top_quantity:
-            top_item = item
-            top_quantity = item_totals[item]["quantity"]
+    plt.title("Revenue by Transaction")
+    plt.xlabel("Transaction Number")
+    plt.ylabel("Revenue ($)")
 
-    # Display the report
-    print("\n=== Big Sky Bites Sales Report ===\n")
+    plt.savefig("revenue_by_transaction.png")
+    plt.show()
 
-    print(f"Total transactions: {total_transactions}")
-    print(f"Total items sold: {total_items_sold}")
-    print(f"Total revenue: ${total_revenue:.2f}")
-    print(f"Average sale: ${average_sale:.2f}")
-    print(f"Best-selling item: {top_item} ({top_quantity} sold)")
 
-    # Display totals for each food item
-    print("\nSales by Item:")
+    print("Charts saved successfully!")
 
-    for item in item_totals:
-        print(
-            f"{item}: {item_totals[item]['quantity']} sold, "
-            f"${item_totals[item]['revenue']:.2f} revenue"
-        )
 
 
 
@@ -469,8 +475,11 @@ while True:
         view_sales_report(sales)
         input("\nPress Enter to return to the main menu...")
 
-    elif user_input in ["5", "6"]:
+    elif user_input == "5":
         print("Coming soon!\n")
+
+    elif user_input == "6":
+        generate_charts(sales)
         
     else:
         print("Invalid option. Please enter a number 1-7.\n")
